@@ -8,7 +8,7 @@ export const scanMembership = async (scanData: {
 }) => {
   try {
     const response = await axios.post(
-      `http://localhost:3000/membership/scan-member`,
+      `https://6e2e-88-203-244-169.eu.ngrok.io/membership/scan-member`,
       scanData
     )
 
@@ -39,7 +39,7 @@ export const authenticationWithTicket = async (ticketData: {
 }): Promise<{ isSuccess: boolean; message: string }> => {
   try {
     await axios.post(
-      `http://localhost:3000/membership/authenticate-ticket`,
+      `https://6e2e-88-203-244-169.eu.ngrok.io/membership/authenticate-ticket`,
       ticketData
     )
 

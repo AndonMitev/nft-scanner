@@ -1,0 +1,88 @@
+# Generated from cookiecutter ci/cd workflow
+
+name: opn-launchpad-frontend-service-production-cd
+# Trigger condition can be update per your preference
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ENV: production
+  SERVICE_NAME: opn-launchpad-frontend-service # cannot change once set as it's being used by ArgoCD
+  AWS_REGION: ap-southeast-1
+  PRODUCTION_ECR_REPOSITORY: opn-launchpad-frontend-service
+  ARGOCD_REPO: opn-product-argocd
+  ARGOCD_REPO_WORKFLOW_NAME: cd
+  APP_TYPE: frontend
+  APP_PORT: 3000
+  PRODUCTION_AWS_ACCOUNT_ID: ${{ secrets.OPN_PRODUCT_PRODUCTION_AWS_ACCOUNT_ID }}
+
+jobs:
+  build_and_push_image:
+    name: Build and push image
+    runs-on: ubuntu-20.04
+    outputs:
+      latest-commit: ${{ steps.get-latest-commit.outputs.latest-commit }}
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ env.PRODUCTION_AWS_ACCOUNT_ID }}:role/github-action-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Get latest commit
+        id: get-latest-commit
+        run: |
+          echo "latest commit: $(git rev-parse --short HEAD)"
+          echo "::set-output name=latest-commit::$(git rev-parse --short HEAD)"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/${{ env.PRODUCTION_ECR_REPOSITORY }}:${{ steps.get-latest-commit.outputs.latest-commit }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  trigger_deploy_workflow:
+    needs: [build_and_push_image]
+    name: Trigger deploy workflow
+    runs-on: ubuntu-20.04
+    env:
+      COMMIT_SHA: ${{ needs.build_and_push_image.outputs.latest-commit }}
+    steps:
+      - name: Invoke workflow in the project argocd repo
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: ${{ env.ARGOCD_REPO_WORKFLOW_NAME }}
+          repo: opn-ooo/${{ env.ARGOCD_REPO }}
+          ref: refs/heads/master
+          token: ${{ secrets.GH_TOKEN }}
+          inputs: |
+            {
+              "service": "${{ env.SERVICE_NAME }}",
+              "env": "${{ env.ENV }}",
+              "tag": "${{ env.COMMIT_SHA }}",
+              "app_type": "${{ env.APP_TYPE }}",
+              "app_port": "${{ env.APP_PORT }}",
+              "app_ver": "${{ github.event.inputs.ref == '' && env.COMMIT_SHA || github.event.inputs.ref }}"
+            }

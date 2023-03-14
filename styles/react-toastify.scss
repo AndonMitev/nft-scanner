@@ -1,0 +1,76 @@
+$grey-5: #adb0b8;
+$grey-80: #343840;
+$red-30: #ffc9cf;
+
+
+#__next {
+  --toastify-color-error: #fef1f3;
+  --toastify-text-color-error: #181b21;
+
+  --toastify-color-success: #e8faf3;
+  --toastify-text-color-success: #181b21;
+
+  --toastify-color-warning: #fef7ea;
+  --toastify-text-color-warning: #181b21;
+
+  --toastify-color-info: #eff6fe;
+  --toastify-text-color-info: #181b21;
+
+  .Toastify__toast {
+    box-shadow: none;
+    border-radius: 8px;
+
+    &.Toastify__toast--success {
+      border: 2px solid #aae5ce;
+    }
+
+    &.Toastify__toast--error {
+      border: 2px solid $red-30;
+    }
+
+    &.Toastify__toast--warning {
+      border: 2px solid #fcdd9d;
+    }
+
+    &.Toastify__toast--info {
+      border: 2px solid #bfddff;
+    }
+
+    .Toastify__close-button {
+      color: $grey-80;
+    }
+
+    .Toastify__toast-icon {
+      margin-inline-end: 16px;
+    }
+
+    .notification-content {
+      h3 {
+        font-weight: 600;
+        font-size: 16px;
+        line-height: 24px;
+        color: #181b21;
+      }
+
+      p {
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 22px;
+        color: $grey-80;
+        margin-top: 3px;
+      }
+
+      button {
+        font-weight: normal;
+        font-size: 12px;
+        line-height: 16px;
+        color: $grey-80;
+        padding: 2px 4px;
+        margin-top: 13px;
+        background-color: inherit;
+        border-radius: 4px;
+        border: 1px solid $grey-5;
+      }
+    }
+  }
+}

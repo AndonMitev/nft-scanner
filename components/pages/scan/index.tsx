@@ -22,7 +22,12 @@ export function ScanView() {
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [nftSelection, setNftSelection] = useState<
-    Array<{ contractAddress: string; tokenId: string; name: string }>
+    Array<{
+      contractAddress: string
+      tokenId: string
+      name: string
+      ticketType: string
+    }>
   >([])
   const router = useRouter()
 

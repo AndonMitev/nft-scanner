@@ -69,6 +69,10 @@ export function ScanView() {
             setNftSelection(response.data)
             setIsSelectionModalOpen(true)
           } else {
+            if (response.isSuccess) {
+              console.log('called from success scan')
+              window.location.replace(`dev.ooo.opn.wallet://success`)
+            }
             setState(response as { isSuccess: boolean; message: string })
           }
         }
@@ -96,6 +100,11 @@ export function ScanView() {
     })) as {
       isSuccess: boolean
       message: string
+    }
+
+    if (response.isSuccess) {
+      console.log('called from success ticket')
+      window.location.replace(`dev.ooo.opn.wallet://success`)
     }
 
     setState(response)
